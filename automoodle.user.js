@@ -114,7 +114,7 @@ function writeMatchResponse(questionDiv, questionInfo) {
 function writeResponses(iframe, attemptChoices) {
     var iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
     for (var key in attemptChoices) {
-        if (!attemptChoices.hasOwnKey(key)) {
+        if (!attemptChoices.hasOwnProperty(key)) {
             continue;
         }
         var questionInfo = attemptChoices[key];
