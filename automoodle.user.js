@@ -89,7 +89,14 @@ function writeMultichoiceResponse(questionDiv, questionInfo) {
         if (answerDiv.tagName != "DIV") {
             continue;
         }
-        var input = answerDiv.getElementsByTagName("input")[0];
+        var inputs = answerDiv.getElementsByTagName("input");
+        var input;
+        for (var x = 0; x < inputs.length; ++x) {
+            if (inputs[x].type != "hidden") {
+                input = inputs[x];
+                break;
+            }
+        }
         var label = answerDiv.getElementsByTagName("label")[0];
         var answerText = convertToPlainText(label);
         var previousAnswers = questionInfo.answers;
