@@ -113,7 +113,10 @@ function writeMatchResponse(questionDiv, questionInfo) {
 
 function writeResponses(iframe, attemptChoices) {
     var iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
-    for (key in attemptChoices) {
+    for (var key in attemptChoices) {
+        if (!attemptChoices.hasOwnKey(key)) {
+            continue;
+        }
         var questionInfo = attemptChoices[key];
         var questionDiv = iframeDoc.getElementById(key);
         var questionType = questionInfo.type;
