@@ -22,8 +22,6 @@ function convertToPlainText(element) {
 }
 
 function parseMultichoiceDiv(div) {
-    var questionDiv = div.getElementsByClassName("qtext")[0];
-    var questionText = convertToPlainText(questionDiv);
     var answerChoiceDivs = div.getElementsByClassName("answer")[0].childNodes;
     var answerChoices = [];
     for (var i = 0; i < answerChoiceDivs.length; ++i) {
@@ -31,9 +29,16 @@ function parseMultichoiceDiv(div) {
         if (answerChoiceDiv.tagName != "DIV" || !answerChoiceDiv.className.startsWith("r")) {
             continue;
         }
-        var input = answerChoiceDiv.getElementsByTagName("input")[0];
+        var inputs = answerChoiceDiv.getElementsByTagName("input");
+        var input;
+        for (var x = 0; x < inputs.length; ++x) {
+            if (inputs[x].type != "hidden") {
+                input = inputs[x];
+                break;
+            }
+        }
         var label = answerChoiceDiv.getElementsByTagName("label")[0];
-        var checked = input.getAttribute("checked");
+        var checked = input.checked;
         var text = convertToPlainText(label);
         answerChoices.push({
             "checked": checked,
@@ -43,7 +48,6 @@ function parseMultichoiceDiv(div) {
 
     return {
         "type": "multichoice",
-        "question": questionText,
         "answers": answerChoices
     };
 }
@@ -57,6 +61,16 @@ function parseTrueFalseDiv(div) {
 function parseMatchDiv(div) {
     // TODO
     return null;
+}
+
+function parseNumericalDiv(div) {
+    var answerDiv = div.getElementsByClassName("answer")[0];
+    var input = answerDiv.getElementsByTagName("input")[0];
+    var value = input.value;
+    return {
+        "type": "numerical",
+        "value": value
+    }
 }
 
 function parseAttemptHtml(html) {
@@ -77,6 +91,8 @@ function parseAttemptHtml(html) {
             questions[questionId] = parseTrueFalseDiv(questionDiv);
         } else if (questionDiv.className.indexOf("match") >= 0) {
             questions[questionId] = parseMatchDiv(questionDiv);
+        } else if (questionDiv.className.indexOf("numerical") >= 0) {
+            questions[questionId] = parseNumericalDiv(questionDiv);
         }
     }
     return questions;
@@ -118,6 +134,12 @@ function writeMatchResponse(questionDiv, questionInfo) {
     // TODO
 }
 
+function writeNumericalResponse(questionDiv, questionInfo) {
+    var answerDiv = questionDiv.getElementsByClassName("answer")[0];
+    var input = answerDiv.getElementsByTagName("input")[0];
+    input.value = questionInfo.value;
+}
+
 function writeResponses(iframe, attemptChoices) {
     var iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
     for (var key in attemptChoices) {
@@ -133,6 +155,8 @@ function writeResponses(iframe, attemptChoices) {
             writeTrueFalseResponse(questionDiv, questionInfo);
         } else if (questionType == "match") {
             writeMatchResponse(questionDiv, questionInfo);
+        } else if (questionType == "numerical") {
+            writeNumericalResponse(questionDiv, questionInfo);
         }
     }
     iframe.onload = function() {
