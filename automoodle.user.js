@@ -59,8 +59,24 @@ function parseTrueFalseDiv(div) {
 }
 
 function parseMatchDiv(div) {
-    // TODO
-    return null;
+    var questionTable = div.getElementsByClassName("answer")[0];
+    var rows = questionTable.getElementsByTagName("tr");
+    var answerChoices = [];
+    for (var i = 0; i < rows.length; ++i) {
+        var questionCell = rows[i].getElementsByClassName("text")[0];
+        var questionText = convertToPlainText(questionCell);
+        var answerCell = rows[i].getElementsByClassName("control")[0];
+        var answerBox = answerCell.getElementsByTagName("select")[0];
+        var answerText = answerBox.options[answerBox.selectedIndex].text;
+        answerChoices.push({
+            "question": questionText,
+            "answer": answerText
+        });
+    }
+    return {
+        "type": "match",
+        "answers": answerChoices
+    };
 }
 
 function parseNumericalDiv(div) {
@@ -70,7 +86,7 @@ function parseNumericalDiv(div) {
     return {
         "type": "numerical",
         "value": value
-    }
+    };
 }
 
 function parseAttemptHtml(html) {
@@ -100,6 +116,7 @@ function parseAttemptHtml(html) {
 
 function writeMultichoiceResponse(questionDiv, questionInfo) {
     var answerDivs = questionDiv.getElementsByClassName("answer")[0].childNodes;
+    var previousAnswers = questionInfo.answers;
     for (var i = 0; i < answerDivs.length; ++i) {
         var answerDiv = answerDivs[i];
         if (answerDiv.tagName != "DIV") {
@@ -115,7 +132,6 @@ function writeMultichoiceResponse(questionDiv, questionInfo) {
         }
         var label = answerDiv.getElementsByTagName("label")[0];
         var answerText = convertToPlainText(label);
-        var previousAnswers = questionInfo.answers;
         for (var j = 0; j < previousAnswers.length; ++j) {
             var previousAnswer = previousAnswers[j];
             if (previousAnswer.text == answerText) {
@@ -131,7 +147,28 @@ function writeTrueFalseResponse(questionDiv, questionInfo) {
 }
 
 function writeMatchResponse(questionDiv, questionInfo) {
-    // TODO
+    var questionTable = questionDiv.getElementsByClassName("answer")[0];
+    var rows = questionTable.getElementsByTagName("tr");
+    var previousAnswers = questionInfo.answers;
+    for (var i = 0; i < rows.length; ++i) {
+        var questionCell = rows[i].getElementsByClassName("text")[0];
+        var questionText = convertToPlainText(questionCell);
+        var answerCell = rows[i].getElementsByClassName("control")[0];
+        var answerBox = answerCell.getElementsByTagName("select")[0];
+        var answerOptions = answerBox.options;
+        for (var j = 0; j < previousAnswers.length; ++j) {
+            var previousAnswer = previousAnswers[j];
+            if (previousAnswer.question == questionText) {
+                for (var k = 0; k < answerOptions.length; ++k) {
+                    if (previousAnswer.answer == answerOptions[k].text) {
+                        answerBox.selectedIndex = k;
+                        break;
+                    }
+                }
+                break;
+            }
+        }
+    }
 }
 
 function writeNumericalResponse(questionDiv, questionInfo) {
